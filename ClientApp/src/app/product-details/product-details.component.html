@@ -1,0 +1,21 @@
+<div class="mt-5" *ngIf="product">
+  <h4 style="text-align:center;">Edit Product</h4>
+
+  <div class="form-group">
+    <input type="hidden" name="id" #id [value]="product.id">
+
+    <label for="name">Name</label>
+    <input [value]="product.name" #name type="text" class="form-control" name="name">
+  </div>
+  <div class="form-group">
+    <label for="price">Price</label>
+    <input [value]="product.price" #price type="string" class="form-control" name="price">
+  </div>
+  <div class="form-group">
+    <div class="custom-control custom-checkbox">
+        <input [checked]="product.isActive" #isactive type="checkbox" id="isActive" class="custom-control-input">
+        <label for="isActive" class="custom-control-label"></label>
+    </div>
+  </div>
+  <button class="btn btn-primary" (click)="updateProduct(id.value,name.value,price.value,isactive.checked); name.value=''; price.value=''; isactive.checked=false;">Edit Products</button>
+</div>

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -6,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using serverapp.Models;
 using serverapp.Profile;
 using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +25,13 @@ builder.Services.AddDbContext<Context>(opt =>
     opt.UseSqlServer(builder.Configuration.GetConnectionString("cnnstr"));
 });
 
+builder.Services.AddControllers().AddNewtonsoftJson();
+
+builder.Services.Configure<JsonOptions>(options =>
+{
+    options.SerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+});
+
 builder.Services.AddIdentity<User, Role>().AddEntityFrameworkStores<Context>();
 
 builder.Services.Configure<IdentityOptions>(opt =>
@@ -36,12 +45,16 @@ builder.Services.Configure<IdentityOptions>(opt =>
     opt.User.RequireUniqueEmail = true;
 });
 
+ string MyAllowOrigins = "_myAllowOrigins";
+
 builder.Services.AddCors(opt =>
 {
-    opt.AddDefaultPolicy(
+    opt.AddPolicy(
+        name:MyAllowOrigins,
         builder =>
         {
-            builder.WithOrigins("http://localhost:4200")
+            builder
+            .WithOrigins("http://localhost:4200", "https://localhost:4200")
             .AllowAnyHeader()
             .AllowAnyMethod();
         });
@@ -59,13 +72,15 @@ builder.Services.AddAuthentication(x =>
     x.SaveToken = true;
     x.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
     {
-        ValidateIssuerSigningKey = true, //tokený yazan kiþi
+        ValidateIssuerSigningKey = true, //tokenï¿½ yazan kiï¿½i
         IssuerSigningKey=new 
         SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration.GetSection("AppSettings:Secret").Value)),
         ValidateIssuer=false,
         ValidateAudience=false
     };
 });
+
+
 #endregion
 
 var app = builder.Build();
@@ -77,8 +92,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-//biz ekledik
+#region ""
 app.UseAuthentication();
+app.UseCors(MyAllowOrigins);
+#endregion
+
 
 app.UseHttpsRedirection();
 

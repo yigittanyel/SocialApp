@@ -18,7 +18,7 @@ namespace serverapp.Controllers
             _context = context;
         }
 
-        [HttpGet]
+        [HttpGet("getproducts")]
         [AllowAnonymous]
         public async Task<IActionResult> GetProducts()
         {
